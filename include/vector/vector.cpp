@@ -26,16 +26,6 @@ namespace polynomials {
 		~Vector();
 		T& operator[](int num);
 		T operator[](int num) const;
-		friend std::ostream& operator<<(std::ostream& os, const Vector<T>& vector) {
-			for (int i = 0; i < vector._size; ++i) {
-				if (i == vector.get_size()) {
-					os << vector._ptr[i] << "x^" << i;
-					return os;
-				}
-				os << vector._ptr[i] << "x^" << i << "+";
-			}
-			return os;
-		}
 	};
 
 	template <typename T>
@@ -96,10 +86,10 @@ namespace polynomials {
 
 	template <typename T>
 	Vector<T>& Vector<T>::operator+=(const Vector<T>& other) {
-		int newSize = (_size > other._size) ? _size : other._size;
-		Vector<T> result(newSize);
+		int new_size = (_size > other._size) ? _size : other._size;
+		Vector<T> result(new_size);
 
-		for (int i = 0; i < newSize; ++i) {
+		for (int i = 0; i < new_size; ++i) {
 			if (i < _size) {
 				result._ptr[i] += _ptr[i];
 			}
@@ -114,10 +104,10 @@ namespace polynomials {
 
 	template <typename T>
 	Vector<T>& Vector<T>::operator-=(const Vector<T>& other) {
-		int newSize = (_size > other._size) ? _size : other._size;
-		Vector<T> result(newSize);
+		int new_size = (_size > other._size) ? _size : other._size;
+		Vector<T> result(new_size);
 
-		for (int i = 0; i < newSize; ++i) {
+		for (int i = 0; i < new_size; ++i) {
 			if (i < _size) {
 				result._ptr[i] += _ptr[i];
 			}
@@ -155,6 +145,13 @@ namespace polynomials {
 	}
 
 	template <typename T>
+	Vector<T>& Vector<T>::operator=(const Vector<T>& other) {
+		Vector<T> other_copy(other);
+		this->Swap(other_copy);
+		return *this;
+	}
+
+	template <typename T>
 	Vector<T>::Vector(const Vector<T>& other) {
 		this->_size = other._size;
 		this->_ptr = new T[_size];
@@ -162,13 +159,5 @@ namespace polynomials {
 			this->_ptr[i] = other[i];
 		}
 	}
-
-	template <typename T>
-	Vector<T>& Vector<T>::operator=(const Vector<T>& other) {
-		Vector<T> other_copy(other);
-		this->Swap(other_copy);
-		return *this;
-	}
-
 }
 #endif 
