@@ -133,7 +133,7 @@ namespace polynomials {
 
 	template<typename T>
 	Polynomial<T> Polynomial<T>::operator+(const Polynomial<T>& other) const {
-		int max_size = std::max(_coeff.get_size(), other._coeff.get_size());
+		int max_size = max(_coeff.get_size(), other._coeff.get_size());
 		Polynomial<T> result(max_size);
 
 		for (int i = 0; i < max_size; ++i) {
@@ -154,7 +154,7 @@ namespace polynomials {
 
 	template<typename T>
 	Polynomial<T> Polynomial<T>::operator-(const Polynomial<T>& other) const {
-		int max_size = std::max(_coeff.get_size(), other._coeff.get_size());
+		int max_size = max(_coeff.get_size(), other._coeff.get_size());
 		Polynomial<T> result(max_size);
 
 		for (int i = 0; i < max_size; ++i) {
@@ -233,6 +233,22 @@ namespace polynomials {
 	Polynomial<T>& Polynomial<T>::operator=(Polynomial<T> other) {
 		std::swap(_coeff, other._coeff);
 		return *this;
+	}
+
+
+	template<typename T>
+	Polynomial<T> integral_compute(Polynomial<T>& other) {
+		Polynomial<T> integral(other);
+		int new_size = integral.get_coeffs().get_size();
+		integral.expand(new_size + 1);
+		for (int i = 0; i < new_size; ++i) {
+			T coeff = other.coeff_at(i);
+			T new_coeff = coeff / (i + 1);
+			integral[i + 1] = new_coeff;
+		}
+		integral[0] = 0;
+		return integral;
+		cout << "+Const" << endl;
 	}
 }
 #endif
