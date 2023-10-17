@@ -1,6 +1,7 @@
 ﻿#ifndef INCLUDE_CLASS_CLASS_H_
 #define INCLUDE_CLASS_CLASS_H_
 
+#pragma once
 #include <Vector.cpp>
 #include <stdexcept>
 #include <cmath>
@@ -42,7 +43,9 @@ namespace polynomials {
 		Polynomial<T> operator+(const Polynomial<T>& other)const;
 		Polynomial<T> operator-=(const Polynomial<T>& other);
 		Polynomial<T> operator-(const Polynomial<T>& other)const;
-		Polynomial<T> operator*(const T scalar) const; //СТАРЫЙ
+		Polynomial<T> operator*(const T& scalar) const; 
+		template <typename T1>
+		friend Polynomial<T> operator*(const T& scalar, const Polynomial<T>& other);
 		T compute(T argument);
 		Polynomial<T> shrink_to_fit();
 		Polynomial<T>& expand(int level);
@@ -168,14 +171,23 @@ namespace polynomials {
 	}
 	
 	template<typename T>
-	Polynomial<T> Polynomial<T>::operator*(const T scalar) const {
+	Polynomial<T> Polynomial<T>::operator*(const T& scalar) const {
 		Polynomial<T> result = *this; 
 		for (int i = 0; i < result._coeff.get_size(); ++i) {
-			result._coeff[i] *= scalar;
+			result._coeff[i] = result._coeff[i] * scalar;
 		}
 		return result;
-	}//старый
+	}
 	
+	template<typename T>
+	Polynomial<T> operator*(const T& scalar, const Polynomial<T>& other) {
+		Polynomial<T> result = other;
+		for (int i = 0; i < result._coeff.get_size(); ++i) {
+			result._coeff[i] = scalar * result._coeff[i];
+		}
+		return result;
+	}
+
 	template<typename T>
 	T Polynomial<T>::compute(T arg) {
 		T result = 0;
@@ -248,7 +260,6 @@ namespace polynomials {
 		}
 		integral[0] = 0;
 		return integral;
-		cout << "+Const" << endl;
 	}
 }
 #endif

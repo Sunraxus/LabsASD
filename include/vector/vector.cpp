@@ -1,5 +1,6 @@
 #ifndef INCLUDE_VECTOR_VECTOR_H_
 #define INCLUDE_VECTOR_VECTOR_H_
+#pragma once
 #include <stdexcept>
 #include <iostream>
 

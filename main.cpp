@@ -1,3 +1,4 @@
+#pragma once
 #include<class.cpp>
 #include<iostream>
 #include<complex>
@@ -25,7 +26,7 @@ int main() {
 
 	Polynomial<float> pol2(4);
 
-	pol2 = integral_compute(pol1);
+	pol2 = pol1 * 5;
 	
 	cout << pol2 << endl;
 	
