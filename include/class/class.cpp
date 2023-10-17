@@ -6,9 +6,26 @@
 #include <cmath>
 #include <complex>
 #include <iostream>
+#include <iosfwd>
 using namespace std;
 
 namespace polynomials {
+
+	bool operator>=(const std::complex<double>& a, const std::complex<double>& b) {
+		return std::abs(a) >= std::abs(b);
+	}
+
+	bool operator<(const std::complex<double>& a, const std::complex<double>& b) {
+		return std::abs(a) < std::abs(b);
+	}
+
+	bool operator>=(const std::complex<float>& a, const std::complex<float>& b) {
+		return std::abs(a) >= std::abs(b);
+	}
+
+	bool operator<(const std::complex<float>& a, const std::complex<float>& b) {
+		return std::abs(a) < std::abs(b);
+	}
 
 	template<typename T>
 	class Polynomial {
@@ -17,7 +34,7 @@ namespace polynomials {
 		Polynomial();
 		Polynomial(int max_level);
 		Polynomial(const Vector<T>& other);
-		Vector<T>& get_coeffs();
+		const Vector<T>& get_coeffs() const;
 		T& operator[](int level);
 		T operator[](int level) const;
 		Polynomial<T> set(T coeff, int level);
@@ -25,7 +42,7 @@ namespace polynomials {
 		Polynomial<T> operator+(const Polynomial<T>& other)const;
 		Polynomial<T> operator-=(const Polynomial<T>& other);
 		Polynomial<T> operator-(const Polynomial<T>& other)const;
-		Polynomial<T> operator*(const T scalar) const;
+		Polynomial<T> operator*(const T scalar) const; //СТАРЫЙ
 		T compute(T argument);
 		Polynomial<T> shrink_to_fit();
 		Polynomial<T>& expand(int level);
@@ -34,13 +51,18 @@ namespace polynomials {
 		Polynomial<T>& operator=(Polynomial<T> other);
 		~Polynomial() = default;
 		const T coeff_at(int index) const;
-		friend std::ostream& operator<<(std::ostream& out, const Polynomial<T>& poly) { //всё еще выводит + c -...
+		friend std::ostream& operator<<(std::ostream& out, const Polynomial<T>& poly) {
 			int new_size = poly._coeff.get_size() - 1;
 
 			for (int i = new_size; i >= 0; --i) {
 				T coeff = poly.coeff_at(i);
 				if (i < new_size) {
-					out << " + ";
+					if (coeff >= T(0)) {
+						out << " + ";
+					}
+					if (coeff < T(0)) {
+						out << " ";
+					}
 				}
 				if (i > 0) {
 					out << coeff << "x^" << i;
@@ -51,6 +73,7 @@ namespace polynomials {
 			}
 			return out;
 		}
+		
 	};
 
 	template<typename T>
@@ -69,7 +92,7 @@ namespace polynomials {
 	}
 
 	template<typename T>
-	Vector<T>& Polynomial<T>::get_coeffs() {
+	const Vector<T>& Polynomial<T>::get_coeffs() const {
 		return _coeff;
 	}
 
@@ -91,8 +114,13 @@ namespace polynomials {
 
 	template<typename T>
 	Polynomial<T> Polynomial<T>::set(T coeff, int level) {
-		if (level < 0 || level > _coeff.get_size()) { throw runtime_error("Invalid level"); }
-		if (coeff == 0) { return *this; } // корректное поведение?
+		if (level < 0) {
+			throw runtime_error("Invalid level"); }
+		if (level > _coeff.get_size()) {
+			expand(level);
+			_coeff[level-1] = coeff;
+			return *this;
+		}
 		_coeff[level] = coeff;
 		return *this;
 	}
@@ -146,16 +174,18 @@ namespace polynomials {
 			result._coeff[i] *= scalar;
 		}
 		return result;
-	}
+	}//старый
 	
 	template<typename T>
 	T Polynomial<T>::compute(T arg) {
 		T result = 0;
+		T current_pos = 1;
 		for (int i = 0; i < _coeff.get_size(); ++i) {
-			result += static_cast<T>(_coeff[i]) * static_cast<T>(pow(arg, i)); // можно ли использовать приведение типов?
+			result += _coeff[i] * current_pos;
+			current_pos *= arg;
 		}
 		return result;
-	}
+	}	
 
 	template<typename T>
 	Polynomial<T> Polynomial<T>::shrink_to_fit() {
@@ -204,66 +234,5 @@ namespace polynomials {
 		std::swap(_coeff, other._coeff);
 		return *this;
 	}
-
-	/*template <std::complex<float>>
-	std::ostream& operator<<(std::ostream& out, const Polynomial<std::complex<float>>& poly) {
-		int new_size = poly._coeff.get_size() - 1;
-
-		for (int i = new_size; i >= 0; --i) {
-			std::complex<float> coeff = poly.coeff_at(i);
-			if (coeff != std::complex<float>(0.0f, 0.0f)) {
-				if (i < new_size) {
-					out << " + ";
-				}
-				if (i > 0) {
-					out << "(" << coeff.real();
-					if (coeff.imag() >= 0) {
-						out << "+";
-					}
-					out << coeff.imag() << "i)";
-					out << "x^" << i;
-				}
-				else {
-					out << "(" << coeff.real();
-					if (coeff.imag() >= 0) {
-						out << "+";
-					}
-					out << coeff.imag() << "i)";
-				}
-			}
-		}
-		return out;
-	}
-
-	template <std::complex<double>>
-	std::ostream& operator<<(std::ostream& out, const Polynomial<std::complex<double>>& poly) {
-		int new_size = poly._coeff.get_size() - 1;
-
-		for (int i = new_size; i >= 0; --i) {
-			std::complex<double> coeff = poly.coeff_at(i);
-			if (coeff != std::complex<double>(0.0, 0.0)) {
-				if (i < new_size) {
-					out << " + ";
-				}
-				if (i > 0) {
-					out << "(" << coeff.real();
-					if (coeff.imag() >= 0) {
-						out << "+";
-					}
-					out << coeff.imag() << "i)";
-					out << "x^" << i;
-				}
-				else {
-					out << "(" << coeff.real();
-					if (coeff.imag() >= 0) {
-						out << "+";
-					}
-					out << coeff.imag() << "i)";
-				}
-			}
-		}
-		return out;
-	}*/ //вывод работает но некорректно 
-
 }
 #endif
