@@ -7,7 +7,6 @@
 #include <cmath>
 #include <complex>
 #include <iostream>
-#include <iosfwd>
 using namespace std;
 
 namespace polynomials {
@@ -40,25 +39,24 @@ namespace polynomials {
 		T operator[](int level) const;
 		Polynomial<T> set(T coeff, int level);
 		Polynomial<T> operator+=(const Polynomial<T>& other);
-		Polynomial<T> operator+(const Polynomial<T>& other)const;
+		Polynomial<T> operator+(const Polynomial<T>& other) const;
 		Polynomial<T> operator-=(const Polynomial<T>& other);
-		Polynomial<T> operator-(const Polynomial<T>& other)const;
+		Polynomial<T> operator-(const Polynomial<T>& other) const;
 		Polynomial<T> operator*(const T& scalar) const; 
 		template <typename T1>
-		friend Polynomial<T> operator*(const T& scalar, const Polynomial<T>& other);
+		friend Polynomial<T1> operator*(const T1& scalar, const Polynomial<T1>& other);
 		T compute(T argument);
-		Polynomial<T> shrink_to_fit();
+		Polynomial<T>& shrink_to_fit();
 		Polynomial<T>& expand(int level);
 		bool operator==(Polynomial<T>& other) const;
 		bool operator!=(Polynomial<T>& other) const;
 		Polynomial<T>& operator=(Polynomial<T> other);
 		~Polynomial() = default;
 		const T coeff_at(int index) const;
-		friend std::ostream& operator<<(std::ostream& out, const Polynomial<T>& poly) {
-			int new_size = poly._coeff.get_size() - 1;
-
+		friend std::ostream& operator<<(std::ostream& out, const Polynomial<T>& other) {
+			int new_size = other._coeff.get_size() - 1;
 			for (int i = new_size; i >= 0; --i) {
-				T coeff = poly.coeff_at(i);
+				T coeff = other.coeff_at(i);
 				if (i < new_size) {
 					if (coeff >= T(0)) {
 						out << " + ";
@@ -142,7 +140,6 @@ namespace polynomials {
 		for (int i = 0; i < max_size; ++i) {
 			T coeff1 = (i < _coeff.get_size()) ? _coeff[i] : 0;
 			T coeff2 = (i < other._coeff.get_size()) ? other._coeff[i] : 0;
-
 			result._coeff[i] = coeff1 + coeff2;
 		}
 
@@ -163,7 +160,6 @@ namespace polynomials {
 		for (int i = 0; i < max_size; ++i) {
 			T coeff1 = (i < _coeff.get_size()) ? _coeff[i] : 0;
 			T coeff2 = (i < other._coeff.get_size()) ? other._coeff[i] : 0;
-
 			result._coeff[i] = coeff1 - coeff2;
 		}
 
@@ -172,18 +168,18 @@ namespace polynomials {
 	
 	template<typename T>
 	Polynomial<T> Polynomial<T>::operator*(const T& scalar) const {
-		Polynomial<T> result = *this; 
+		Polynomial<T> result = *this;
 		for (int i = 0; i < result._coeff.get_size(); ++i) {
 			result._coeff[i] = result._coeff[i] * scalar;
 		}
 		return result;
 	}
-	
+
 	template<typename T>
 	Polynomial<T> operator*(const T& scalar, const Polynomial<T>& other) {
 		Polynomial<T> result = other;
 		for (int i = 0; i < result._coeff.get_size(); ++i) {
-			result._coeff[i] = scalar * result._coeff[i];
+			result._coeff[i] = scalar * other._coeff[i];
 		}
 		return result;
 	}
@@ -200,7 +196,7 @@ namespace polynomials {
 	}	
 
 	template<typename T>
-	Polynomial<T> Polynomial<T>::shrink_to_fit() {
+	Polynomial<T>& Polynomial<T>::shrink_to_fit() {
 		int new_size = _coeff.get_size();
 
 		while (new_size > 0 && _coeff[new_size - 1] == T(0)) {
@@ -247,18 +243,38 @@ namespace polynomials {
 		return *this;
 	}
 
-
 	template<typename T>
-	Polynomial<T> integral_compute(Polynomial<T>& other) {
+	Polynomial<T> integral_compute(const Polynomial<T>& other) {
+		if (std::is_same<T, int>::value) {
+			cout << "Функция не предоставляет корректную работу для типа int" << endl;
+			return Polynomial<T>();
+		}
 		Polynomial<T> integral(other);
 		int new_size = integral.get_coeffs().get_size();
 		integral.expand(new_size + 1);
 		for (int i = 0; i < new_size; ++i) {
 			T coeff = other.coeff_at(i);
-			T new_coeff = coeff / (i + 1);
+			T new_coeff;		
+			if (true) {
+				new_coeff = coeff / (i + 1);
+			}
 			integral[i + 1] = new_coeff;
 		}
-		integral[0] = 0;
+		integral[0] = T(0);
+		return integral;
+	}
+
+	template<>
+	Polynomial<std::complex<float>> integral_compute(const Polynomial<std::complex<float>>& other) {
+		Polynomial<std::complex<float>> integral(other);
+		int new_size = integral.get_coeffs().get_size();
+		integral.expand(new_size + 1);
+		for (int i = 0; i < new_size; ++i) {
+			std::complex<float> coeff = other.coeff_at(i);
+			std::complex<float> new_coeff = coeff / std::complex<float>(i + 1, 0);
+			integral[i + 1] = new_coeff;
+		}
+		integral[0] = std::complex<float>(0, 0);
 		return integral;
 	}
 }

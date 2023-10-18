@@ -123,19 +123,19 @@ namespace polynomials {
 
 
 	template <typename T>
-	T& Vector<T>::operator[](int num) {
-		if (num < 0 || num >= this->_size) {
+	T& Vector<T>::operator[](int index) {
+		if (index < 0 || index >= this->_size) {
 			throw std::out_of_range("Index out of range");
 		}
-		return this->_ptr[num];
+		return this->_ptr[index];
 	}
 
 	template <typename T>
-	T Vector<T>::operator[](int num) const {
-		if (num < 0 || num >= this->_size) {
+	T Vector<T>::operator[](int index) const {
+		if (index < 0 || index >= this->_size) {
 			throw std::out_of_range("Index out of range");
 		}
-		return this->_ptr[num];
+		return this->_ptr[index];
 	}
 
 
